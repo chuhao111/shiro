@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.mrbird.febs.system.dao.PermissionMapper">
+    <resultMap id="permission" type="cc.mrbird.febs.system.domain.Permission">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="PERMISSION_ID" jdbcType="DECIMAL" property="permissionId"/>
+        <id column="ROLE_ID" jdbcType="DECIMAL" property="roleId"/>
+        <result column="PERMISSION" jdbcType="VARCHAR" property="permission"/>
+        
+        <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createtime"/>
+        <result column="MODIFY_TIME" jdbcType="TIMESTAMP" property="modifytime"/>
+    </resultMap>
+     <select id="findUserPermissions" resultMap="permission">
+        select m.*
+        from rt_role r
+                 left join rt_user_role ur on (r.role_id = ur.role_id)
+                 left join rt_user u on (u.user_id = ur.user_id)
+                 left join rt_permission m on (m.role_id = ur.role_id)
+        where u.username = #{userName}
+          
+    </select>
+
+    <select id="findPermissionById" resultMap="permission">
+        select r.*
+        from rt_permission r        
+        where r.role_Id = #{roleId}
+         
+    </select>
+
+</mapper>

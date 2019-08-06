@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Implementation-Title: febs_shiro_jwt
+Implementation-Version: 1.0.0-release
+Built-By: 楚豪
+Implementation-Vendor-Id: cc.mrbird
+Build-Jdk: 1.8.0_45
+Implementation-URL: https://projects.spring.io/spring-boot/#/spring-bo
+ ot-starter-parent/febs_shiro_jwt
+Created-By: Maven Integration for Eclipse
+

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.mrbird.febs.system.dao.RoleMapper">
+	<resultMap id="roleMap"
+		type="cc.mrbird.febs.system.domain.Role">
+		<!-- WARNING - @mbg.generated -->
+		<id column="ROLE_ID" jdbcType="DECIMAL" property="roleId" />
+		<result column="ROLE_NAME" jdbcType="VARCHAR"
+			property="roleName" />
+		<result column="REMARK" jdbcType="VARCHAR" property="remark" />
+		<result column="PERMISSION" jdbcType="VARCHAR"
+			property="permission" />
+		<result column="CREATE_TIME" jdbcType="TIMESTAMP"
+			property="createTime" />
+		<result column="MODIFY_TIME" jdbcType="TIMESTAMP"
+			property="modifyTime" />
+
+	</resultMap>
+	<select id="findRole" resultMap="roleMap">
+		select r.*
+		from rt_role r
+	</select>
+	<select id="findRoles" resultMap="roleMap">
+		select r.*
+		from rt_role r
+	</select>
+	<select id="findRoleById" resultMap="roleMap">
+		select r.*
+		from rt_role r
+
+		where r.role_id = #{roleId}
+	</select>
+
+</mapper>
