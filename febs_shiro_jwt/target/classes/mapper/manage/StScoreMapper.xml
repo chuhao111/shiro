@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.mrbird.febs.manager.dao.StScoreMapper">
+	<resultMap id="BaseResultMap"
+		type="cc.mrbird.febs.manager.entity.Score">
+		<id column="SCORE_ID" jdbcType="DECIMAL" property="scoreId" />
+		<result column="USER_ID" jdbcType="DECIMAL" property="userId" />
+		<result column="NAME" jdbcType="DECIMAL" property="name" />
+		<result column="SCORE" jdbcType="DECIMAL" property="score" />
+		<result column="CREATE_TIME" jdbcType="TIMESTAMP"
+			property="createTime" />
+		<result column="STATE" jdbcType="DECIMAL" property="state" />
+		<result column="MONTH" jdbcType="VARCHAR" property="month" />
+		<result column="COMMENT" jdbcType="VARCHAR" property="comment" />
+		<result column="DEPT_NAME" jdbcType="VARCHAR"
+			property="deptName" />
+		<result column="JOB_NAME" jdbcType="VARCHAR" property="jobName" />
+		<result column="DEPT_ID" jdbcType="DECIMAL" property="deptId" />
+
+
+	</resultMap>
+
+	<select id="findScoreDetail" resultType="score"
+		parameterType="scoreDetail">
+		SELECT
+		u.SCORE_ID scoreId,
+		u.ADJUST,
+		d.name,
+		d.user_id userId,
+		u.SCORE ,
+		u.CREATE_TIME createTime,
+		u.STATE,
+		u.MONTH ,
+		u.COMMENT,
+		d.JOB_NAME jobName,
+		t.DEPT_NAME deptName,
+		d.login_name loginName
+		FROM
+		st_score u
+		LEFT JOIN
+		rt_user d ON (u.user_id =
+		d.user_id)
+		LEFT JOIN
+		mt_dept t ON (d.dept_id = t.dept_id)
+		WHERE 1 = 1
+		<if test="scoreDetail.deptId != null and scoreDetail.deptId != ''">
+			AND d.dept_id=#{scoreDetail.deptId}
+		</if>
+		<if test="scoreDetail.name != null and scoreDetail.name  != ''">
+			AND d.name LIKE concat ("%",
+		#{scoreDetail.name},"%")
+		</if>
+		<if test="scoreDetail.monthFrom != null and scoreDetail.monthFrom !=''">
+			AND u.month &gt;= #{scoreDetail.monthFrom}
+		</if>
+		<if test="scoreDetail.monthTo!= null and scoreDetail.monthTo !=''">
+			AND u.month &lt;= #{scoreDetail.monthTo}
+		</if>
+		group by
+		d.login_name
+	</select>
+</mapper>

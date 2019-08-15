@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.mrbird.febs.manager.dao.StJobperformanceMapper">
+<resultMap id="BaseResultMap"
+		type="cc.mrbird.febs.manager.entity.Jobperformance">
+		<id column="JP_ID" jdbcType="DECIMAL" property="jpID" />
+		<result column="DEPT_ID" jdbcType="DECIMAL" property="deptId" />
+		<result column="JOB_PERFORMANCE" jdbcType="VARCHAR" property="jobPerformance" />
+		<result column="MONTH" jdbcType="VARCHAR" property="month" />
+	
+
+
+	</resultMap>
+</mapper>
