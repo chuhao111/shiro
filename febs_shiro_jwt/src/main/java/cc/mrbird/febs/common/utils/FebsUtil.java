@@ -57,7 +57,7 @@ public class FebsUtil {
 		UserService userService = SpringContextUtil.getBean(UserService.class);
 		CacheService cacheService = SpringContextUtil.getBean(CacheService.class);
 
-		return selectCacheByTemplate(() -> cacheService.getUser(username), () -> userService.findByName(username));
+		return selectCacheByTemplate(() -> cacheService.getUser(username), () -> userService.findDetail(username));
 	}
 
 	/**

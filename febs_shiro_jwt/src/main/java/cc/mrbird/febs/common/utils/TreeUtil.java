@@ -56,7 +56,7 @@ public class TreeUtil {
         root.setHasParent(false);
         root.setHasChildren(true);
         root.setChildren(topNodes);
-        root.setText("root");
+        root.setText("广州银行总部");
         return root;
     }
 

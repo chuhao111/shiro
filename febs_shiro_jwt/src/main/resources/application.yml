@@ -19,7 +19,7 @@ spring:
         # 数据源-1，名称为 primary
         primary:
           username: root
-          password: root
+          password: admin
           driver-class-name: com.mysql.cj.jdbc.Driver
           url: jdbc:mysql://127.0.0.1:3306/shirodemo?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
         # 数据源-2，名称为 test
@@ -53,7 +53,7 @@ spring:
 
 #mybatis plus 设置
 mybatis-plus:
-  type-aliases-package: cc.mrbird.febs.system.domain,cc.mrbird.febs.job.domain
+  type-aliases-package: cc.mrbird.febs.system.domain,cc.mrbird.febs.manager.entity
   mapper-locations: classpath:mapper/*/*.xml
   configuration:
     jdbc-type-for-null: null
@@ -78,6 +78,6 @@ febs:
         num: 1000
   shiro:
     # 后端免认证接口 url
-    anonUrl: /login,/logout/**,/regist,/user/check/**,/user/loginUser
+    anonUrl: /login,/logout/**,/regist,/user/check/**,/user/loginUser,/jobperformance/createPerformance,/user/checkOneUser,/jobperformance/checkPerformance
     # token有效期，单位秒
-    jwtTimeOut: 10800
+    jwtTimeOut: 108000

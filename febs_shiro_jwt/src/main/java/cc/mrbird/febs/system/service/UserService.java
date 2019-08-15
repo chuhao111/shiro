@@ -3,6 +3,8 @@ package cc.mrbird.febs.system.service;
 import cc.mrbird.febs.common.domain.QueryRequest;
 import cc.mrbird.febs.system.domain.User;
 
+import java.util.List;
+
 import javax.validation.constraints.NotBlank;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -17,8 +19,13 @@ public interface UserService extends IService<User> {
      * @param username username
      * @return user
      */
-    User findByName(String username);
-
+	//User findByDeptId(String deptId);
+	IPage<User> findByDeptId(String deptId, QueryRequest queryRequest);
+	IPage<User> findByDept(String deptId, QueryRequest queryRequest);
+	List<User> findByName(String loginName);
+	List<User> findByLevel();
+    User findDetail(String loginName);
+    User findOneUser(String loginName);
     /**
      * 查询用户详情，包括基本信息，用户角色，用户部门
      *

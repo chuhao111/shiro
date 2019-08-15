@@ -42,5 +42,6 @@ public class Dept implements Serializable {
     private transient String createTimeFrom;
 
     private transient String createTimeTo;
+    
 
 }

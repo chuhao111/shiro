@@ -92,7 +92,7 @@ public class CacheServiceImpl implements CacheService {
 
     @Override
     public void saveUser(User user) throws Exception {
-        String username = user.getUsername();
+        String username = user.getLoginName();
         this.deleteUser(username);
         redisService.set(FebsConstant.USER_CACHE_PREFIX + username, mapper.writeValueAsString(user));
     }

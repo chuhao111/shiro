@@ -1,12 +1,14 @@
 package cc.mrbird.febs.common.domain;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Data;
-import lombok.ToString;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import cc.mrbird.febs.system.domain.User;
+import lombok.Data;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -18,8 +20,8 @@ public class Tree<T> {
 
 	private String icon;
 
-	private String title;
-
+	// private String title;
+	private IPage<User> user;
 	private String value;
 
 	private String text;

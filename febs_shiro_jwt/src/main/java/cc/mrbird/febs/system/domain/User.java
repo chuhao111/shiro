@@ -47,10 +47,7 @@ public class User implements Serializable {
     @TableId(value = "USER_ID", type = IdType.AUTO)
     private Long userId;
 
-    @Size(min = 4, max = 10, message = "{range}")
-    @ExcelField(value = "用户名")
-    private String username;
-
+   
     private String password;
 
     private Long deptId;
@@ -62,7 +59,13 @@ public class User implements Serializable {
     @Email(message = "{email}")
     @ExcelField(value = "邮箱")
     private String email;
-
+    @ExcelField(value = "用户名")
+    private String name;
+    private String loginName;
+    private String empCode;
+    private Long leaderId;
+    private String level;
+    private String jobName;
     @Pattern(regexp = RegexpConstant.MOBILE_REG, message = "{mobile}")
     @ExcelField(value = "手机号")
     private String mobile;

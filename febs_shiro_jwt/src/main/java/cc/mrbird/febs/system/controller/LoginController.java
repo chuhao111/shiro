@@ -86,12 +86,12 @@ public class LoginController {
 	// "limit")
 	public String login(@RequestBody Admin admin, HttpServletRequest request) throws Exception {
 
-		String username = StringUtils.lowerCase(admin.getUsername());
+		String loginName = StringUtils.lowerCase(admin.getLoginName());
 
-		String password = MD5Util.encrypt(username, admin.getPassword());
+		String password = MD5Util.encrypt(loginName, admin.getPassword());
 
 		final String errorMessage = "用户名或密码错误";
-		User user = this.userManager.getUser(username);
+		User user = this.userManager.getUser(loginName);
 
 		if (user == null)
 			return JsonUtils.objectToJson(StateResultUtil.build(403, "用户名不能为空"));
@@ -99,13 +99,13 @@ public class LoginController {
 			return JsonUtils.objectToJson(StateResultUtil.build(402, errorMessage));
 
 		// 更新用户登录时间
-		this.userService.updateLoginTime(username);
+		this.userService.updateLoginTime(loginName);
 		// 保存登录记录
 		LoginLog loginLog = new LoginLog();
-		loginLog.setUsername(username);
+		loginLog.setUsername(loginName);
 		this.loginLogService.saveLoginLog(loginLog);
 
-		String token = FebsUtil.encryptToken(JWTUtil.sign(username, password));
+		String token = FebsUtil.encryptToken(JWTUtil.sign(loginName, password));
 
 		return JsonUtils.objectToJson(StateResultUtil.ok(new Authentication(token)));
 	}
@@ -118,7 +118,7 @@ public class LoginController {
 
 		String username = JWTUtil.getUsername(FebsUtil.decryptToken(token));
 
-		User user = this.userService.findByName(username);
+		User user = this.userService.findDetail(username);
 
 		LocalDateTime expireTime = LocalDateTime.now().plusSeconds(properties.getShiro().getJwtTimeOut());
 		String expireTimeStr = DateUtil.formatFullTime(expireTime);
@@ -145,7 +145,7 @@ public class LoginController {
 		List<Map<String, Object>> lastSevenVisitCount = loginLogMapper.findLastSevenDaysVisitCount(null);
 		data.put("lastSevenVisitCount", lastSevenVisitCount);
 		User param = new User();
-		param.setUsername(username);
+		param.setLoginName(username);
 		List<Map<String, Object>> lastSevenUserVisitCount = loginLogMapper.findLastSevenDaysVisitCount(param);
 		data.put("lastSevenUserVisitCount", lastSevenUserVisitCount);
 		return new FebsResponse().data(data);
@@ -211,7 +211,7 @@ public class LoginController {
 
 	@PostMapping("regist")
 	public void regist(@RequestBody Admin admin) throws Exception {
-		this.userService.regist(admin.getUsername(), admin.getPassword());
+		this.userService.regist(admin.getLoginName(), admin.getPassword());
 	}
 
 	private String saveTokenToRedis(User user, JWTToken token, HttpServletRequest request) throws Exception {
@@ -219,7 +219,7 @@ public class LoginController {
 
 		// 构建在线用户
 		ActiveUser activeUser = new ActiveUser();
-		activeUser.setUsername(user.getUsername());
+		activeUser.setUsername(user.getLoginName());
 		activeUser.setIp(ip);
 		activeUser.setToken(token.getToken());
 
@@ -243,7 +243,7 @@ public class LoginController {
 	 * @return UserInfo
 	 */
 	private Map<String, Object> generateUserInfo(JWTToken token, User user) {
-		String username = user.getUsername();
+		String username = user.getLoginName();
 		Map<String, Object> userInfo = new HashMap<>();
 		// userInfo.put("token", token.getToken());
 		userInfo.put("exipreTime", token.getExipreAt());

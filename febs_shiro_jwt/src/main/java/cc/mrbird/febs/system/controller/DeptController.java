@@ -7,6 +7,7 @@ import cc.mrbird.febs.common.exception.FebsException;
 import cc.mrbird.febs.common.utils.JsonUtils;
 import cc.mrbird.febs.common.utils.StateResultUtil;
 import cc.mrbird.febs.system.domain.Dept;
+import cc.mrbird.febs.system.domain.DeptScoreRate;
 import cc.mrbird.febs.system.service.DeptService;
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.wuwenze.poi.ExcelKit;
@@ -39,6 +40,35 @@ public class DeptController extends BaseController {
        
         return JsonUtils.objectToJson(StateResultUtil.ok(this.deptService.findDepts(dept, request)));
     }
+    @GetMapping("deptScoreRateList")
+    public String  deptScoreRateList() {
+    	//Dept dept = new Dept();
+    	
+    	return JsonUtils.objectToJson(StateResultUtil.ok(this.deptService.findDeptScoreRate()));
+    }
+    @GetMapping("deptTree")
+    public String  deptTree(QueryRequest request) {
+    	Dept dept = new Dept();
+       
+        return JsonUtils.objectToJson(StateResultUtil.ok(this.deptService.findDepts(request, dept)));
+    }
+    @GetMapping("threeDept")
+    public String  deptThree() {
+    	
+    	
+    	return JsonUtils.objectToJson(StateResultUtil.ok(this.deptService.findThreeDepts()));
+    }
+    
+    @GetMapping("DeptsWithUser")
+    public String  findDeptsWithUser(String deptId,String pageSize,String pageNum) {
+    	
+    	
+    	QueryRequest queryRequest = new QueryRequest();
+		queryRequest.setPageNum(Integer.valueOf(pageNum));
+		queryRequest.setPageSize(Integer.valueOf(pageSize));
+    	
+    	return JsonUtils.objectToJson(StateResultUtil.ok(this.deptService.findDeptsWithUser(queryRequest, deptId)));
+    }
 
     @Log("新增部门")
     @PostMapping("addDept")
@@ -69,7 +99,7 @@ public class DeptController extends BaseController {
         }
     }
 
-    @Log("修改部门")
+    //@Log("修改部门")
     @PostMapping("updateDept")
     //@RequiresPermissions("dept:update")
     public String updateDept(@RequestBody Dept dept) throws FebsException {
@@ -81,6 +111,22 @@ public class DeptController extends BaseController {
             log.error(message, e);
             throw new FebsException(message);
         }
+    }
+    
+  
+    
+  //  @Log("修改部门")
+    @PostMapping("updateDeptScoreRate")
+    //@RequiresPermissions("dept:update")
+    public String updateDeptScoreRate(@RequestBody DeptScoreRate deptScoreRate) throws FebsException {
+    	try {
+    		this.deptService.updateDeptScoreRate(deptScoreRate);
+    		return JsonUtils.objectToJson(StateResultUtil.build(200, "修改部门打分占比成功"));
+    	} catch (Exception e) {
+    		message = "修改部门打分占比失败";
+    		log.error(message, e);
+    		throw new FebsException(message);
+    	}
     }
 
     @PostMapping("excel")

@@ -18,7 +18,7 @@
                  left join rt_user_role ur on (r.role_id = ur.role_id)
                  left join rt_user u on (u.user_id = ur.user_id)
                  left join rt_permission m on (m.role_id = ur.role_id)
-        where u.username = #{userName}
+        where u.login_name = #{loginName}
           
     </select>
 

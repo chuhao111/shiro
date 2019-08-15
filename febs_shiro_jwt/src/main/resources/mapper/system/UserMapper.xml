@@ -1,28 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cc.mrbird.febs.system.dao.UserMapper">
-	<resultMap id="BaseResultMap" type="cc.mrbird.febs.system.domain.User">
+	<resultMap id="BaseResultMap"
+		type="cc.mrbird.febs.system.domain.User">
 		<id column="USER_ID" jdbcType="DECIMAL" property="userId" />
-		<result column="USERNAME" jdbcType="VARCHAR" property="username" />
-		<result column="PASSWORD" jdbcType="VARCHAR" property="password" />
+		<result column="NAME" jdbcType="VARCHAR" property="name" />
+		<result column="USERNAME" jdbcType="VARCHAR"
+			property="username" />
+		<result column="EMP_CODE" jdbcType="VARCHAR" property="empCode" />
+		<result column="LOGIN_NAME" jdbcType="VARCHAR"
+			property="loginName" />
+		<result column="LEADER_ID" jdbcType="DECIMAL"
+			property="leaderId" />
+		<result column="LEVEL" jdbcType="VARCHAR" property="level" />
+		<result column="JOB_NAME" jdbcType="VARCHAR" property="jobName" />
+		<result column="PASSWORD" jdbcType="VARCHAR"
+			property="password" />
 		<result column="DEPT_ID" jdbcType="DECIMAL" property="deptId" />
+		<result column="DEPT_NAME" jdbcType="VARCHAR" property="deptName" />
 		<result column="EMAIL" jdbcType="VARCHAR" property="email" />
 		<result column="MOBILE" jdbcType="VARCHAR" property="mobile" />
 		<result column="STATUS" jdbcType="CHAR" property="status" />
-		<result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
-		<result column="MODIFY_TIME" jdbcType="TIMESTAMP" property="modifyTime" />
-		<result column="LAST_LOGIN_TIME" jdbcType="TIMESTAMP" property="lastLoginTime" />
+		<result column="CREATE_TIME" jdbcType="TIMESTAMP"
+			property="createTime" />
+		<result column="MODIFY_TIME" jdbcType="TIMESTAMP"
+			property="modifyTime" />
+		<result column="LAST_LOGIN_TIME" jdbcType="TIMESTAMP"
+			property="lastLoginTime" />
 		<result column="SSEX" jdbcType="CHAR" property="ssex" />
 		<result column="AVATAR" jdbcType="VARCHAR" property="avatar" />
-		<result column="DESCRIPTION" jdbcType="VARCHAR" property="description" />
+		<result column="DESCRIPTION" jdbcType="VARCHAR"
+			property="description" />
 		<result column="ROLE_ID" jdbcType="VARCHAR" property="roleId" />
-		<result column="ROLE_NAME" jdbcType="VARCHAR" property="roleName" />
+		<result column="ROLE_NAME" jdbcType="VARCHAR"
+			property="roleName" />
 	</resultMap>
 
-	<select id="findUserDetail" resultType="user" parameterType="user">
+	<select id="findUserDetail" resultType="user"
+		parameterType="user">
 		SELECT
 		u.user_id userId,
-		u.username,
+		u.name,
+		u.emp_code empCode,
+		u.leader_id leaderId,
+		u.level,
+		u.login_name loginName,
+		u.dept_id deptId,
+		d.dept_name deptName,
+		u.job_name jobName,
+		u.password,
+		u.email,
+		u.mobile,
+		u.STATUS,
+		u.create_time
+		createTime,
+		u.ssex,
+		u.AVATAR,
+		u.DESCRIPTION,
+		u.LAST_LOGIN_TIME
+		lastLoginTime,
+		u.role_id roleId,
+		r.role_name
+		FROM
+		rt_user u
+		LEFT JOIN
+		mt_dept d ON (u.dept_id = d.dept_id)
+		LEFT JOIN rt_role r ON
+		u.role_id =
+		r.role_id
+	</select>
+
+	<select id="findDetail" resultType="user" parameterType="string">
+		SELECT
+		u.user_id userId,
+		u.name,
+		u.emp_code empCode,
+		u.leader_id leaderId,
+		u.level,
+		u.login_name loginName,
+		u.dept_id deptId,
+		u.job_name jobName,
 		u.password,
 		u.email,
 		u.mobile,
@@ -31,41 +88,163 @@
 		u.ssex,
 		u.AVATAR,
 		u.DESCRIPTION,
+		d.dept_name deptName,
 		u.LAST_LOGIN_TIME lastLoginTime,
-		u.role_id roleId,
+		u.role_id
+		roleId,
 		r.role_name
 		FROM
 		rt_user u
-		, rt_role r
-		WHERE u.role_id = r.role_id
+		LEFT JOIN mt_dept d ON (u.dept_id =
+		d.dept_id)
+		LEFT JOIN rt_role r ON (u.role_id =
+		r.role_id)
+		WHERE
+		u.login_name = #{loginName}
+		group by
+		u.login_name
 	</select>
-
-	<select id="findDetail" resultType="user" parameterType="string">
+	<select id="findOneUser" resultType="user" parameterType="string">
 		SELECT
 		u.user_id userId,
-		u.username,
+		u.name,
+		u.emp_code empCode,
+		u.leader_id leaderId,
+		u.level,
+		u.login_name loginName,
+		u.dept_id deptId,
+		u.job_name jobName,
 		u.password,
 		u.email,
 		u.mobile,
-		u. STATUS,
+		u.STATUS,
 		u.create_time createTime,
 		u.ssex,
-		d.dept_id deptId,
+		u.AVATAR,
+		u.DESCRIPTION,
 		d.dept_name deptName,
+		u.LAST_LOGIN_TIME lastLoginTime
+		
+		FROM
+		rt_user u
+		LEFT JOIN mt_dept d ON (u.dept_id =
+		d.dept_id)
+		WHERE
+		u.login_name = #{loginName}
+		group by
+		u.login_name
+	</select>
+
+	<select id="findByDeptId" resultType="user"
+		parameterType="string">
+		SELECT
+		u.user_id userId,
+		u.name,
+		u.emp_code empCode,
+		u.leader_id leaderId,
+		u.level,
+		u.login_name loginName,
+		u.dept_id deptId,
+		u.job_name jobName,
+		u.password,
+		u.email,
+		u.mobile,
+
+		u.STATUS,
+		u.create_time
+		createTime,
+		u.ssex,
+		u.AVATAR,
+		u.DESCRIPTION,
+		u.LAST_LOGIN_TIME
+		lastLoginTime,
+		u.role_id
+		roleId,
+		d.dept_name deptName,
+		r.role_name
+		FROM
+		rt_user u
+		LEFT JOIN mt_dept d ON (u.dept_id =
+		d.dept_id)
+		LEFT JOIN
+		rt_role r ON
+		u.role_id = r.role_id
+
+		WHERE
+		u.dept_id = #{deptId}
+		group by
+		u.login_name
+	</select>
+	<select id="findUserByName" resultType="user"
+		parameterType="string">
+		SELECT
+		u.user_id userId,
+		u.name,
+		u.emp_code empCode,
+		u.leader_id leaderId,
+		u.level,
+		u.login_name loginName,
+		u.dept_id deptId,
+		u.job_name jobName,
+		u.password,
+		u.email,
+		u.mobile,
+		u.STATUS,
+		d.parent_id
+		parentId,
+		u.create_time createTime,
+		u.ssex,
 		u.AVATAR,
 		u.DESCRIPTION,
 		u.LAST_LOGIN_TIME lastLoginTime,
-		GROUP_CONCAT(r.role_id) roleId,
-		GROUP_CONCAT(r.ROLE_NAME) roleName
+		u.role_id
+		roleId,
+		r.role_name
 		FROM
 		rt_user u
-		LEFT JOIN mt_dept d ON (u.dept_id = d.dept_id)
+		LEFT JOIN mt_dept d ON (u.dept_id =
+		d.dept_id)
 		LEFT JOIN
-		rt_user_role ur ON (u.user_id = ur.user_id)
-		LEFT JOIN rt_role r ON
-		r.role_id = ur.role_id
-		WHERE u.username = #{username}
-		group by
-		u.username
+		rt_role r ON
+		u.role_id = r.role_id
+		WHERE
+		u.name LIKE concat ("%",
+		#{name},"%")
+
+	</select>
+	<select id="findUserByDept" resultType="user"
+		parameterType="string">
+		SELECT
+		u.user_id userId,
+		u.name,
+		u.emp_code empCode,
+		u.leader_id leaderId,
+		u.level,
+		u.login_name loginName,
+		u.dept_id deptId,
+		u.job_name jobName,
+		u.password,
+		u.email,
+		u.mobile,
+		u.STATUS,
+		u.create_time
+		createTime,
+		u.ssex,
+		u.AVATAR,
+		d.dept_name deptName,
+		u.DESCRIPTION,
+		u.LAST_LOGIN_TIME
+		lastLoginTime,
+		u.role_id roleId
+		FROM
+		rt_user u
+		LEFT JOIN
+		mt_dept d ON
+		(u.dept_id = d.dept_id)
+		where
+		u.DEPT_ID in ( SELECT d.dept_id FROM (
+		SELECT dept_id FROM mt_dept WHERE
+		FIND_IN_SET( dept_id,
+		findDeptChildren ( #{deptId}) ) > 0 ) d )
 	</select>
 </mapper>

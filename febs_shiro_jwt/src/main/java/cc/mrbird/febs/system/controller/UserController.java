@@ -10,6 +10,7 @@ import javax.validation.constraints.NotBlank;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.StreamingHttpOutputMessage;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.wuwenze.poi.ExcelKit;
 
@@ -36,6 +38,7 @@ import cc.mrbird.febs.system.domain.UserConfig;
 import cc.mrbird.febs.system.domain.UserQuery;
 import cc.mrbird.febs.system.service.UserConfigService;
 import cc.mrbird.febs.system.service.UserService;
+import freemarker.template.utility.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -52,15 +55,31 @@ public class UserController extends BaseController {
 	private UserConfigService userConfigService;
 
 	@GetMapping("check/{username}")
-	public boolean checkUserName(@NotBlank(message = "{required}") @PathVariable String username) {
+	public boolean checkUserName(@NotBlank(message = "{required}") String username) {
 		return this.userService.findByName(username) == null;
 
 	}
 
-	@GetMapping("/{username}")
-	public String detail(@NotBlank(message = "{required}") @PathVariable String username) {
+	@GetMapping("select")
+	public String detail(String name) {
 
-		return JsonUtils.objectToJson(StateResultUtil.ok(this.userService.findByName(username)));
+		if (StringUtils.isEmpty(name)) {
+			return JsonUtils.objectToJson(StateResultUtil.build(405, "空值查不到", null));
+		} else {
+			return JsonUtils.objectToJson(StateResultUtil.ok(this.userService.findByName(name)));
+		}
+	}
+
+	@GetMapping("select/deptId")
+	public String staffDetail(String deptId, String pageSize, String pageNum) {
+		QueryRequest queryRequest = new QueryRequest();
+		queryRequest.setPageNum(Integer.valueOf(pageNum));
+		queryRequest.setPageSize(Integer.valueOf(pageSize));
+		if (StringUtils.isEmpty(deptId)) {
+			return JsonUtils.objectToJson(StateResultUtil.build(405, "空值查不到", null));
+		} else {
+			return JsonUtils.objectToJson(StateResultUtil.ok(this.userService.findByDeptId(deptId, queryRequest)));
+		}
 	}
 
 	@GetMapping("check")
@@ -69,16 +88,28 @@ public class UserController extends BaseController {
 		return JsonUtils.objectToJson(StateResultUtil.ok(this.userService.findById(userId)));
 	}
 
+	@GetMapping("leaderUser")
+	public String selectLeaderUser() {
+
+		return JsonUtils.objectToJson(StateResultUtil.ok(this.userService.findByLevel()));
+	}
+
 	@PostMapping("checkUser")
 	// @RequiresPermissions("user:view")
 	public String userList(@RequestBody QueryRequest queryRequest) {
 		User user = null;
 
-		if (userService.findUserDetail(user, queryRequest).getTotal() != 0) {
-			return JsonUtils
-					.objectToJson(StateResultUtil.ok(getDataTable(userService.findUserDetail(user, queryRequest))));
-		}
-		return JsonUtils.objectToJson(StateResultUtil.build(400, "抱歉,查无此对象"));
+		return JsonUtils.objectToJson(StateResultUtil.ok(getDataTable(userService.findUserDetail(user, queryRequest))));
+
+	}
+	@GetMapping("checkOneUser")
+	// @RequiresPermissions("user:view")
+	public String userList(String loginName) {
+		User findDetail = userService.findOneUser(loginName);
+		
+		
+		return JsonUtils.objectToJson(StateResultUtil.ok(findDetail));
+		
 	}
 
 	@Log("新增用户")
@@ -125,6 +156,33 @@ public class UserController extends BaseController {
 		}
 	}
 
+	// @Log("删除用户")
+	@GetMapping("addUserDeptId")
+	// @RequiresPermissions("user:delete")
+	public String addUserDeptId(@NotBlank String deptId, @NotBlank(message = "{required}") String userId)
+			throws FebsException {
+		try {
+			String[] ids = userId.split(StringPool.COMMA);
+			// User user = null;
+			User user = null;
+			Long deptId1 = Long.valueOf(deptId);
+			for (String id : ids) {
+				// Long id1 = Long.valueOf(id);
+				user = userService.findById(id);
+				// user.setUserId(id1);
+				user.setDeptId(deptId1);
+				this.userService.updateById(user);
+
+			}
+
+			return JsonUtils.objectToJson(StateResultUtil.build(200, "增加部门id成功"));
+		} catch (Exception e) {
+			message = "新增用户部门id失败";
+			log.error(message, e);
+			throw new FebsException(message);
+		}
+	}
+
 	@PutMapping("profile")
 	public void updateProfile(@Valid User user) throws FebsException {
 		try {
@@ -137,10 +195,10 @@ public class UserController extends BaseController {
 	}
 
 	@PutMapping("avatar")
-	public void updateAvatar(@NotBlank(message = "{required}") String username,
+	public void updateAvatar(@NotBlank(message = "{required}") String loginName,
 			@NotBlank(message = "{required}") String avatar) throws FebsException {
 		try {
-			this.userService.updateAvatar(username, avatar);
+			this.userService.updateAvatar(loginName, avatar);
 		} catch (Exception e) {
 			message = "修改头像失败";
 			log.error(message, e);
@@ -160,16 +218,16 @@ public class UserController extends BaseController {
 	}
 
 	@GetMapping("password/update")
-	public String checkPassword(HttpServletRequest request,
-			@NotBlank(message = "{required}") String password) throws FebsException {
+	public String checkPassword(HttpServletRequest request, @NotBlank(message = "{required}") String password)
+			throws FebsException {
 		String token = request.getHeader(TOKEN);
 
 		String username = JWTUtil.getUsername(FebsUtil.decryptToken(token));
 
-		//User user = this.userService.findByName(username);
+		// User user = this.userService.findByName(username);
 
 		String encryptPassword = MD5Util.encrypt(username, password);
-		User user = userService.findByName(username);
+		User user = userService.findDetail(username);
 		if (user != null)
 			if (StringUtils.equals(user.getPassword(), encryptPassword) != true) {
 				try {
@@ -184,20 +242,19 @@ public class UserController extends BaseController {
 			}
 		return JsonUtils.objectToJson(StateResultUtil.build(400, "初试密码跟修改密码一样,修改用户密码失败"));
 	}
+
 	@GetMapping("password/reset")
 	public String resetPassword(@NotBlank(message = "{required}") String userId,
 			@NotBlank(message = "{required}") String password) throws FebsException {
-		
 
-
-		//User user = this.userService.findByName(username);
+		// User user = this.userService.findByName(username);
 		User user = userService.findById(userId);
 
-		String encryptPassword = MD5Util.encrypt(user.getUsername(), password);
+		String encryptPassword = MD5Util.encrypt(user.getLoginName(), password);
 		if (user != null)
 			if (StringUtils.equals(user.getPassword(), encryptPassword) != true) {
 				try {
-					userService.updatePassword(user.getUsername(), password);
+					userService.updatePassword(user.getLoginName(), password);
 				} catch (Exception e) {
 					message = "修改密码失败";
 					log.error(message, e);
@@ -210,10 +267,10 @@ public class UserController extends BaseController {
 	}
 
 	@PutMapping("password")
-	public void updatePassword(@NotBlank(message = "{required}") String username,
+	public void updatePassword(@NotBlank(message = "{required}") String loginName,
 			@NotBlank(message = "{required}") String password) throws FebsException {
 		try {
-			userService.updatePassword(username, password);
+			userService.updatePassword(loginName, password);
 		} catch (Exception e) {
 			message = "修改密码失败";
 			log.error(message, e);
@@ -221,18 +278,16 @@ public class UserController extends BaseController {
 		}
 	}
 
-/*	@PutMapping("password/reset")
-	@RequiresPermissions("user:reset")
-	public void resetPassword(@NotBlank(message = "{required}") String usernames) throws FebsException {
-		try {
-			String[] usernameArr = usernames.split(StringPool.COMMA);
-			this.userService.resetPassword(usernameArr);
-		} catch (Exception e) {
-			message = "重置用户密码失败";
-			log.error(message, e);
-			throw new FebsException(message);
-		}
-	}*/
+	/*
+	 * @PutMapping("password/reset")
+	 * 
+	 * @RequiresPermissions("user:reset") public void
+	 * resetPassword(@NotBlank(message = "{required}") String usernames) throws
+	 * FebsException { try { String[] usernameArr =
+	 * usernames.split(StringPool.COMMA);
+	 * this.userService.resetPassword(usernameArr); } catch (Exception e) { message
+	 * = "重置用户密码失败"; log.error(message, e); throw new FebsException(message); } }
+	 */
 
 	@PostMapping("excel")
 	@RequiresPermissions("user:export")

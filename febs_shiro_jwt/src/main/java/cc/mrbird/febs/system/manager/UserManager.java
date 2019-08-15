@@ -48,9 +48,9 @@ public class UserManager {
 	 * @param username 用户名
 	 * @return 用户基本信息
 	 */
-	public User getUser(String username) {
-		return FebsUtil.selectCacheByTemplate(() -> this.cacheService.getUser(username),
-				() -> this.userService.findByName(username));
+	public User getUser(String loginName) {
+		return FebsUtil.selectCacheByTemplate(() -> this.cacheService.getUser(loginName),
+				() -> this.userService.findDetail(loginName));
 	}
 
 	/**
@@ -118,11 +118,11 @@ public class UserManager {
 	 */
 	public void loadUserRedisCache(User user) throws Exception {
 		// 缓存用户
-		cacheService.saveUser(user.getUsername());
+		cacheService.saveUser(user.getLoginName());
 		// 缓存用户角色
 		//cacheService.saveRoles(user.getUsername());
 		// 缓存用户权限
-		cacheService.savePermissions(user.getUsername());
+		cacheService.savePermissions(user.getLoginName());
 		// 缓存用户个性化配置
 		cacheService.saveUserConfigs(String.valueOf(user.getUserId()));
 	}
@@ -138,7 +138,7 @@ public class UserManager {
 			// 缓存用户角色
 			//cacheService.saveRoles(user.getUsername());
 			// 缓存用户权限
-			cacheService.savePermissions(user.getUsername());
+			cacheService.savePermissions(user.getLoginName());
 		}
 	}
 
@@ -151,9 +151,9 @@ public class UserManager {
 		for (String userId : userIds) {
 			User user = userService.getById(userId);
 			if (user != null) {
-				cacheService.deleteUser(user.getUsername());
-				cacheService.deleteRoles(user.getUsername());
-				cacheService.deletePermissions(user.getUsername());
+				cacheService.deleteUser(user.getLoginName());
+				cacheService.deleteRoles(user.getLoginName());
+				cacheService.deletePermissions(user.getLoginName());
 			}
 			cacheService.deleteUserConfigs(userId);
 		}

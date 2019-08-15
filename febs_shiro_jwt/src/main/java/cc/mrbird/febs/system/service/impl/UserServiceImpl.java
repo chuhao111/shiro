@@ -13,6 +13,8 @@ import cc.mrbird.febs.system.manager.UserManager;
 import cc.mrbird.febs.system.service.UserConfigService;
 import cc.mrbird.febs.system.service.UserRoleService;
 import cc.mrbird.febs.system.service.UserService;
+import freemarker.core.ReturnInstruction.Return;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
@@ -43,11 +45,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private UserRoleService userRoleService;
     @Autowired
     private UserManager userManager;
+    @Autowired
+    private UserMapper userMapper;
 
 
     @Override
-    public User findByName(String username) {
-        return baseMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getUsername, username));
+    public List<User> findByName(String username) {
+        return userMapper.findUserByName(username);
     }
 
 
@@ -69,7 +73,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User user = new User();
         user.setLastLoginTime(new Date());
 
-        this.baseMapper.update(user, new LambdaQueryWrapper<User>().eq(User::getUsername, username));
+        this.baseMapper.update(user, new LambdaQueryWrapper<User>().eq(User::getLoginName, username));
 
         // 重新将用户信息加载到 redis中
         cacheService.saveUser(username);
@@ -81,7 +85,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 创建用户
         user.setCreateTime(new Date());
         user.setAvatar(User.DEFAULT_AVATAR);
-        user.setPassword(MD5Util.encrypt(user.getUsername(), User.DEFAULT_PASSWORD));
+        user.setPassword(MD5Util.encrypt(user.getLoginName(), User.DEFAULT_PASSWORD));
         save(user);
 
         // 保存用户角色
@@ -99,19 +103,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Transactional
     public void updateUser(User user) throws Exception {
         // 更新用户
-        user.setPassword(null);
+       // user.setPassword(null);
         user.setModifyTime(new Date());
         updateById(user);
 
-        userRoleMapper.delete(new LambdaQueryWrapper<UserRole>().eq(UserRole::getUserId, user.getUserId()));
+       // userRoleMapper.delete(new LambdaQueryWrapper<UserRole>().eq(UserRole::getUserId, user.getUserId()));
 
         String[] roles = user.getRoleId().split(StringPool.COMMA);
         setUserRoles(user, roles);
 
         // 重新将用户信息，用户角色信息，用户权限信息 加载到 redis中
-        cacheService.saveUser(user.getUsername());
+        cacheService.saveUser(user.getLoginName());
       //  cacheService.saveRoles(user.getUsername());
-        cacheService.savePermissions(user.getUsername());
+        cacheService.savePermissions(user.getLoginName());
     }
 
     @Override
@@ -135,7 +139,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public void updateProfile(User user) throws Exception {
         updateById(user);
         // 重新缓存用户信息
-        cacheService.saveUser(user.getUsername());
+        cacheService.saveUser(user.getLoginName());
     }
 
     @Override
@@ -144,10 +148,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User user = new User();
         user.setAvatar(avatar);
 
-        this.baseMapper.update(user, new LambdaQueryWrapper<User>().eq(User::getUsername, username));
+        this.baseMapper.update(user, new LambdaQueryWrapper<User>().eq(User::getLoginName, username));
         // 重新缓存用户信息
         cacheService.saveUser(username);
     }
+   /* @Override
+    @Transactional
+    public void updateDeptId(String deptId) throws Exception {
+        User user = new User();
+        user.setAvatar(avatar);
+
+        this.baseMapper.update(user, new LambdaQueryWrapper<User>().eq(User::getLoginName, username));
+        // 重新缓存用户信息
+        cacheService.saveUser(username);
+    }*/
 
     @Override
     @Transactional
@@ -155,7 +169,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User user = new User();
         user.setPassword(MD5Util.encrypt(username, password));
 
-        this.baseMapper.update(user, new LambdaQueryWrapper<User>().eq(User::getUsername, username));
+        this.baseMapper.update(user, new LambdaQueryWrapper<User>().eq(User::getLoginName, username));
         // 重新缓存用户信息
         cacheService.saveUser(username);
     }
@@ -165,7 +179,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public void regist(String username, String password) throws Exception {
         User user = new User();
         user.setPassword(MD5Util.encrypt(username, password));
-        user.setUsername(username);
+        user.setLoginName(username);
         user.setCreateTime(new Date());
         user.setStatus(User.STATUS_VALID);
         user.setSsex(User.SEX_UNKNOW);
@@ -179,7 +193,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         this.userRoleMapper.insert(ur);
 
         // 创建用户默认的个性化配置
-        userConfigService.initDefaultUserConfig(String.valueOf(user.getUserId()));
+        //userConfigService.initDefaultUserConfig(String.valueOf(user.getUserId()));
         // 将用户相关信息保存到 Redis中
         userManager.loadUserRedisCache(user);
 
@@ -193,7 +207,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             User user = new User();
             user.setPassword(MD5Util.encrypt(username, User.DEFAULT_PASSWORD));
 
-            this.baseMapper.update(user, new LambdaQueryWrapper<User>().eq(User::getUsername, username));
+            this.baseMapper.update(user, new LambdaQueryWrapper<User>().eq(User::getLoginName, username));
             // 重新将用户信息加载到 redis中
             cacheService.saveUser(username);
         }
@@ -214,5 +228,54 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 	public User findById(String userId) {
 		 return baseMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getUserId, userId));
 	
+	}
+/*	@Override
+	public User findByDeptId(String deptId) {
+		 return baseMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getDeptId, deptId));
+	
+	}*/
+
+    @Override
+    public IPage<User> findByDeptId(String deptId, QueryRequest request) {
+        try {
+            Page<User> page = new Page<>();
+            SortUtil.handlePageSort(request, page, "userId", FebsConstant.ORDER_ASC, false);
+            IPage<User> findByDeptId = this.baseMapper.findByDeptId(page, deptId);
+            return this.baseMapper.findByDeptId(page, deptId);
+        } catch (Exception e) {
+            log.error("查询用户异常", e);
+            return null;
+        }
+    }
+    @Override
+    public IPage<User> findByDept(String deptId, QueryRequest request) {
+    	try {
+    		Page<User> page = new Page<>();
+    		SortUtil.handlePageSort(request, page, "userId", FebsConstant.ORDER_ASC, false);
+    		IPage<User> findByDeptId = this.baseMapper.findUserByDept(page, deptId);
+    		return findByDeptId;
+    	} catch (Exception e) {
+    		log.error("查询用户异常", e);
+    		return null;
+    	}
+    }
+	
+	@Override
+	 public User findDetail(String loginName){
+		 
+		 return baseMapper.findDetail(loginName);
+	 }
+
+
+	@Override
+	public List<User> findByLevel() {
+		 return baseMapper.selectList(new LambdaQueryWrapper<User>().eq(User::getLevel, 2).or().eq(User::getLevel, 1));
+	}
+
+
+	@Override
+	public User findOneUser(String loginName) {
+		
+		return baseMapper.findOneUser(loginName);
 	}
 }
